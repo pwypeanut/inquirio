@@ -1,0 +1,144 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600);
+@import url(http://fonts.googleapis.com/css?family=Montserrat:400);
+
+* {
+	font-family: "Source Sans Pro", sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  padding: 20px;
+  background-image: url('/resources/img/classroom.png');
+  overflow: hidden;
+}
+
+#login-box h1 {
+  font-family: Montserrat, sans-serif;
+  color: white;
+  z-index: 3;
+  position: relative;
+  font-size: 50px !important;
+  margin-bottom: 10px;
+  width: 360px;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: rgba(0,0,0,0.8);
+  z-index: 2;
+}
+
+#header {
+  width: 360px;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 6px;
+  background-color: #F27160;
+  color: white;
+  padding: 10px;
+}
+
+#login-box {
+  position: absolute;
+  text-align: left;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  vertical-align: middle;
+  z-index: 3;
+}
+
+input {
+  width: 400px;
+  font-size: 15px;
+  padding: 8px;
+  padding-left: 10px;
+  outline: none;
+  border: 1px rgba(0,0,0,0.5) solid;
+}
+
+.field-wrapper {
+  width: 400px;
+  height: 38px;
+  position:relative;
+  margin-bottom: 5px;
+}
+
+label {
+  position: absolute;
+  top: 10px;
+  right: 50px;
+  font-size:11px;
+  color: #aaa;
+  padding: 2px;
+  transition: all 0.1s linear;
+  opacity: 0;
+  font-weight: bold;
+  background: #fff;
+  padding: 2px;
+}
+
+label.on {
+  color: #F27160;
+}
+
+label.show {
+  opacity: 1;
+  right: 60px;
+}
+
+input {
+	width: 90%;
+}
+
+#password, #repeat-password {
+  float: left;
+  border-right: none;
+}
+
+#submit {
+  width: 10%;
+  height: 38px;
+  margin-top: -1px;
+  text-align: center;
+  line-height: 34px;
+  color: white;
+  background-color: #F27160;
+  border: 1px rgba(0,0,0,0.5) solid;
+  border-left: none;
+  float: left;
+}
+
+#submit:hover {
+  background-color: #CE5B52;
+}
+
+.register {
+	display: none;
+}
+
+#sign-up-tooltip:before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 8px 8px 8px;
+  border-color: transparent transparent #F27160 transparent;
+}
+
+#sign-up-tooltip {
+  position: relative;
+  color: white;
+  margin-top: 8px;
+  width: 180px;
+  padding: 10px;
+  font-size: 15px;
+  background-color: #F27160;
+}

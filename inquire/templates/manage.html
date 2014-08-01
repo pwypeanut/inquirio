@@ -1,0 +1,407 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+    <link href='/resources/css/normalize.css' rel='stylesheet'>
+    <link href='/resources/css/home.css' rel='stylesheet'>
+    <script src="/resources/js/jquery.min.js"></script>
+    <script src="/resources/js/stellar.min.js"></script>
+    <script src="/resources/js/masonry.min.js"></script>
+    <script src="/resources/js/jquery.cookie.js"></script>
+    <script>
+      function htmlentities(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      var topic_to_id = {};
+      var update = {};
+      function tag_name(s) {
+        return s.toLowerCase().replace(" ", "-");
+      }
+      
+      function array_to_row(arr) {
+        var id = arr[0];
+        var question_text = arr[1];
+        var options = arr[2];
+        var answer = arr[3];
+        var correct_cnt = arr[4];
+        var wrong_cnt = arr[5];
+        var current_row = "<tr data-id='" + id.toString() + "' data-option-count='" + options.length + "'>";
+        
+        current_row += "<td class='id'><span class='maintext'>" + id + "</span></td>";
+        current_row += "<td class='question_text'><span class='maintext'>" + question_text + "</span></td>";
+        for ( var i = 0; i < 4; i++ ) {
+          // FOUR CASES. THANKS FOR MAKING ME CODE THIS.
+          if ( i < options.length - 1 ) {
+            current_row += "<td class='option" + (i+1).toString() + " option_exist'><span class='maintext'>" + options[i] + "</span></td>";
+          }
+          else if ( i == options.length - 1 ){
+            current_row += "<td class='option" + (i+1).toString() + " option_last'><span class='maintext'>" + options[i] + "</span></td>";
+          }
+          else if ( i == options.length ) {
+            current_row += "<td class='option" + (i+1).toString() + " option_add'><span class='maintext'>-</span></td>";
+          }
+          else {
+            current_row += "<td class='option" + (i+1).toString() + " option_free'><span class='maintext'>-</span></td>"; 
+          }
+        }
+        current_row += "<td class='answer'><span class='maintext'>" + answer + "</span></td>";
+        current_row += "<td class='correct_count'><span class='maintext'>" + correct_cnt + "</span></td>";
+        current_row += "<td class='wrong_count'><span class='maintext'>" + wrong_cnt + "</span></td>";
+        current_row += "</tr>";
+        return current_row;
+      }
+      
+      function select_topic(s) {       
+        $(".question-category").css("font-weight", "normal");
+        $("*[data-topic='" + tag_name(s) + "']").css("font-weight", "bold");
+        var topicid = $("*[data-topic='" + tag_name(s) + "']").data("id");
+        $("#question-list").html("<tr><th>ID</th><th>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr><tr><td colspan='9'><i>No Questions Found.</i></tr>");
+        $("#subtopic-selector select").html("<option>Please Wait...</option>");
+        $.get("/query/subtopic/" + topicid.toString() + "/", function(data) {
+          var subtopics = JSON.parse(data);
+          $("#subtopic-selector select").html("<option value='Select...'>Select...</option>");
+          for ( var i = 0; i < subtopics.length; i++ ) {
+            $("#subtopic-selector select").append("<option value='" + subtopics[i].name + "'>" + subtopics[i].name + "</option>");
+            topic_to_id[subtopics[i].name] = subtopics[i].id;
+          }
+        });
+      }
+      
+      var edit_mode = 0;
+      
+      var attach_option_handlers = function(append_flag) {
+        var edit_button = "<span style='margin-left: 10px;' class='glyphicon glyphicon-edit'></span>";
+        var remove_button = "<span style='margin-left: 10px;' class='glyphicon glyphicon-remove'></span>";
+        var add_button = "<span style='margin-left: 10px;' class='glyphicon glyphicon-plus'></span>";
+        
+        $(".option.glyphicon").unbind("click");
+        
+        // Handlers for editing options
+        if (append_flag) $(".option_exist").append(edit_button);
+        $(".option_exist .glyphicon-edit").click(function(event) {
+          event.stopImmediatePropagation();
+          if (edit_mode) return;
+          $(this).parent().children(".maintext").attr("contentEditable", "true");
+          $(this).parent().children(".maintext").focus();
+          edit_mode = 1;
+          $(this).hide();
+          $(this).parent().children(".maintext").unbind("focusout");
+          $(this).parent().children(".maintext").focusout(function(event) {
+            event.stopImmediatePropagation();
+            edit_mode = 0;
+            var id = $(this).parent().parent().data("id");
+            var new_option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
+            var new_option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
+            var new_option3 = $(this).parent().parent().children(".option3").children(".maintext").html();
+            var new_option4 = $(this).parent().parent().children(".option4").children(".maintext").html();
+            var option_count = $(this).parent().parent().data("option-count");
+            var options_list = [new_option1, new_option2, new_option3, new_option4];
+            $.post("/edit/options/" + id + "/", {
+              'new_options': JSON.stringify(options_list.slice(0, option_count)),
+              'csrfmiddlewaretoken': $.cookie("csrftoken"),
+            });
+            $(this).attr("contentEditable", "false");
+            $(this).parent().children(".glyphicon-edit").show();
+          });
+        });
+
+        if (append_flag) $(".option_last").append(edit_button);
+        $(".option_last .glyphicon-edit").click(function(event) {
+          event.stopImmediatePropagation();
+          if (edit_mode) return;
+          $(this).parent().children(".maintext").attr("contentEditable", "true");
+          $(this).parent().children(".maintext").focus();
+          $(this).hide();
+          edit_mode = 1;
+          $(this).parent().children(".glyphicon-remove").hide();
+          $(this).parent().children(".maintext").unbind("focusout");
+          $(this).parent().children(".maintext").focusout(function(event) {
+            event.stopImmediatePropagation();
+            edit_mode = 0;
+            var id = $(this).parent().parent().data("id");
+            var new_option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
+            var new_option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
+            var new_option3 = $(this).parent().parent().children(".option3").children(".maintext").html();
+            var new_option4 = $(this).parent().parent().children(".option4").children(".maintext").html();
+            var option_count = $(this).parent().parent().data("option-count");
+            var options_list = [new_option1, new_option2, new_option3, new_option4];
+            $.post("/edit/options/" + id + "/", {
+              'new_options': JSON.stringify(options_list.slice(0, option_count)),
+              'csrfmiddlewaretoken': $.cookie("csrftoken"),
+            });
+            $(this).attr("contentEditable", "false");
+            $(this).parent().children(".glyphicon-edit").show();
+            $(this).parent().children(".glyphicon-remove").show();
+          });
+        });
+        if (append_flag) $(".option_last").append(remove_button);
+        $(".option_last .glyphicon-remove").click(function(event) {
+          event.stopImmediatePropagation();
+          if (edit_mode) return;
+          $(this).parent().children(".maintext").html("-");
+          $(this).parent().children(".glyphicon-edit").hide();
+          $(this).parent().children(".glyphicon-remove").hide();
+          var new_count = parseInt($(this).parent().parent().data("option-count")) - 1;
+          $(this).parent().parent().data("option-count", new_count);
+          var id = $(this).parent().parent().data("id");
+          var new_option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
+          var new_option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
+          var new_option3 = $(this).parent().parent().children(".option3").children(".maintext").html();
+          var new_option4 = $(this).parent().parent().children(".option4").children(".maintext").html();
+          var options_list = [new_option1, new_option2, new_option3, new_option4];
+          $.post("/edit/options/" + id + "/", {
+            'new_options': JSON.stringify(options_list.slice(0, new_count)),
+            'csrfmiddlewaretoken': $.cookie("csrftoken"),
+          });
+          if ( $(this).parent().children(".glyphicon-plus").length ) {
+            $(this).parent().children(".glyphicon-plus").show();
+          }
+          else {
+            $(this).parent().append(add_button);
+          }
+          if ( $(this).parent().parent().children(".option" + new_count.toString()).children(".glyphicon-remove").length ) {
+            $(this).parent().parent().children(".option" + new_count.toString()).children(".glyphicon-remove").show();
+          }
+          else {
+            $(this).parent().parent().children(".option" + new_count.toString()).append(remove_button);
+          }
+          $(this).parent().parent().children(".option" + new_count.toString()).removeClass("option_exist");
+          $(this).parent().parent().children(".option" + new_count.toString()).addClass("option_last");
+          if ( $(this).parent().parent().children(".option" + (new_count+1).toString()).length ) {
+            $(this).parent().parent().children(".option" + (new_count+1).toString()).removeClass("option_last");
+            $(this).parent().parent().children(".option" + (new_count+1).toString()).addClass("option_add");
+          }
+          if ( $(this).parent().parent().children(".option" + (new_count+2).toString()).children(".glyphicon-plus").length ) {
+            $(this).parent().parent().children(".option" + (new_count+2).toString()).children(".glyphicon-plus").hide();
+            $(this).parent().parent().children(".option" + (new_count+2).toString()).removeClass("option_add");
+            $(this).parent().parent().children(".option" + (new_count+2).toString()).addClass("option_free");
+          }
+            
+          attach_option_handlers(0);
+        });
+          
+        $(".option_add .glyphicon-plus").click(function(event) {
+          event.stopImmediatePropagation();
+          if (edit_mode) return;
+          $(this).parent().children(".maintext").attr("contentEditable", "true");
+          $(this).parent().children(".maintext").focus();
+          edit_mode = 1;
+          $(this).parent().children(".glyphicon-plus").hide();
+          var new_count = parseInt($(this).parent().parent().data("option-count")) + 1;
+          $(this).parent().parent().data("option-count", new_count);
+          $(this).parent().parent().children(".option" + (new_count-1).toString()).children(".glyphicon-remove").hide();
+          $(this).parent().parent().children(".option" + (new_count-1).toString()).removeClass("option_last");
+          $(this).parent().parent().children(".option" + (new_count-1).toString()).addClass("option_exist");
+          $(this).parent().parent().children(".option" + new_count.toString()).removeClass("option_add");
+          $(this).parent().parent().children(".option" + new_count.toString()).addClass("option_last");
+          if ( $(this).parent().parent().children(".option" + (new_count+1).toString()).length ) {
+            $(this).parent().parent().children(".option" + (new_count+1).toString()).removeClass("option_free");
+            $(this).parent().parent().children(".option" + (new_count+1).toString()).addClass("option_add");
+          }
+          if ( $(this).parent().parent().children(".option" + new_count.toString()).children(".glyphicon-edit").length ) {
+            $(this).parent().parent().children(".option" + new_count.toString()).children(".glyphicon-edit").show();
+          }
+          else {
+            $(this).parent().parent().children(".option" + new_count.toString()).append(edit_button);
+          }
+          if ( $(this).parent().parent().children(".option" + new_count.toString()).children(".glyphicon-remove").length ) {
+            $(this).parent().parent().children(".option" + new_count.toString()).children(".glyphicon-remove").show();
+          }
+          else {
+            $(this).parent().parent().children(".option" + new_count.toString()).append(remove_button);
+          }
+          if ( $(this).parent().parent().children(".option" + (new_count+1).toString()).length ) {
+            if ( $(this).parent().parent().children(".option" + (new_count+1).toString()).children(".glyphicon-plus").length ) {
+              $(this).parent().parent().children(".option" + (new_count+1).toString()).children(".glyphicon-plus").show();
+            }
+            else {
+              $(this).parent().parent().children(".option" + (new_count+1).toString()).append(add_button);
+            }
+          }
+          $(this).parent().children(".maintext").unbind("focusout");
+          $(this).parent().children(".maintext").focusout(function(event) {
+            event.stopImmediatePropagation();
+            edit_mode = 0;
+            var id = $(this).parent().parent().data("id");
+            var new_option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
+            var new_option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
+            var new_option3 = $(this).parent().parent().children(".option3").children(".maintext").html();
+            var new_option4 = $(this).parent().parent().children(".option4").children(".maintext").html();
+            var option_count = $(this).parent().parent().data("option-count");
+            var options_list = [new_option1, new_option2, new_option3, new_option4];
+            $.post("/edit/options/" + id + "/", {
+              'new_options': JSON.stringify(options_list.slice(0, option_count)),
+              'csrfmiddlewaretoken': $.cookie("csrftoken"),
+            });
+            $(this).attr("contentEditable", "false");
+            $(this).parent().children(".glyphicon-edit").show();
+            $(this).parent().children(".glyphicon-remove").show();
+          });
+
+          attach_option_handlers(0);
+        });
+      }
+      
+      $(document).ready(function () {
+        $(".subtopic").toggle();
+        select_topic($("#questions-nav").children(":first-child").html());
+        $("#search-logo").click(function () {
+          $("#search-div").slideToggle(200);
+        });
+        $("#questions").on("click", ".card", function () {
+          $(this).remove();
+          $("#questions").masonry();
+        })
+        $.stellar({
+          horizontalScrolling: false,
+          verticalOffset: 50
+        });
+        $(window).scroll(function(e){ 
+          $el = $('#questions-nav'); 
+          if ($(this).scrollTop() > 350 && $el.css('position') != 'fixed'){ 
+            $el.css({'position': 'fixed', 'top': '0px', 'margin-bottom': '0px'}); 
+            $('#questions').css({'margin-top': 87});
+          }
+          if ($(this).scrollTop() < 350 && $el.css('position') == 'fixed')
+          {
+            $el.css({'position': 'relative', 'top': '0px', 'margin-bottom': '42px'});
+            $('#questions').css({'margin-top': 20});
+          }
+        });
+        $(".manage-questions").click(function() {
+          window.location = "/home/";
+        });
+        $("#subtopic-selector select").change(function() {
+          var new_topic = $("#subtopic-selector select").val();
+          var header = "<tr><th>ID</th><th>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr>";
+          var no_question_found = header + "<tr><td colspan='9'><i>No Questions Found.</i></tr>";
+          var waiting = header + "<tr><td colspan='9'><i>Please wait...</i></tr>";
+          
+          // Default case: No subtopic selected
+          if ( new_topic == "Select..." ) {
+            $("#question-list").html(no_question_found);
+            return;
+          }
+          // Waiting message while data is being fetched.
+          var new_id = topic_to_id[new_topic];
+          $("#question-list").html(waiting);
+          $.get("/query/auth_questions/" + new_id.toString() + "/", function(data) {
+            var JSON_data = JSON.parse(data);
+            $("#question-list").html(header);
+            
+            for ( var i = 0; i < JSON_data.length; i++ ) {
+              $("#question-list").append(array_to_row(JSON_data[i]));
+            }
+            
+            var edit_button = "<span style='margin-left: 10px;' class='glyphicon glyphicon-edit'></span>";
+            var remove_button = "<span style='margin-left: 10px;' class='glyphicon glyphicon-remove'></span>";
+            var add_button = "<span style='margin-left: 10px;' class='glyphicon glyphicon-plus'></span>";
+            
+            // Handlers for editing question text
+            $(".question_text").append(edit_button);
+            $(".question_text .glyphicon-edit").click(function() {
+              $(this).parent().children(".maintext").attr("contentEditable", "true");
+              $(this).parent().children(".maintext").focus();
+              $(this).hide();
+              $(this).parent().children(".maintext").focusout(function() {
+                var id = $(this).parent().parent().data("id");
+                var new_data = $(this).html();
+                $.post("/edit/question/" + id + "/", {
+                  'new_question': new_data,
+                  'csrfmiddlewaretoken': $.cookie("csrftoken"),
+                });
+                $(this).attr("contentEditable", "false");
+                $(this).parent().children(".glyphicon-edit").show();
+              });
+            });
+            
+            attach_option_handlers(1);
+            
+            $(".answer").append(edit_button);
+            $(".answer .glyphicon-edit").click(function() {
+              $(this).hide();
+              $(this).parent().children(".maintext").html("");
+              var option_count = $(this).parent().parent().data("option-count");
+              var option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
+              var option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
+              var option3 = $(this).parent().parent().children(".option3").children(".maintext").html();
+              var option4 = $(this).parent().parent().children(".option4").children(".maintext").html();
+              var options = [option1, option2, option3, option4];
+              var id = $(this).parent().parent().data("id");
+              
+              var html_output = "<select>";
+              html_output += "<option value='none'>-</option>";
+              for ( var i = 0; i < option_count; i++ ) {
+                html_output += "<option value='" + options[i] + "'>" + options[i] + "</option>";
+              }
+              html_output += "</select>";
+              
+              $(this).parent().children(".maintext").html(html_output);
+              $(this).parent().children(".maintext").children("select").change(function() {
+                $.post("/edit/answer/" + id + "/", {
+                  'new_answer': $(this).val(),
+                  'csrfmiddlewaretoken': $.cookie("csrftoken"),
+                });
+                $(this).parent().parent().children(".glyphicon-edit").show();
+                $(this).parent().html($(this).val());
+              });
+            });
+            
+            if ( JSON_data.length == 0 ) {
+              $("#question-list").html(no_question_found);
+            }
+          });
+        });
+      });
+      
+    </script>
+  </head>
+  <body>
+    <div id="nav">
+      <a href="#"><img src="/resources/img/inquirio.png" id="logo"/></a>
+      <a id="logout" href="/logout/">LOGOUT</a>
+      <div id="search-logo"><span class="glyphicon glyphicon-search"></span></div>
+    </div>
+    <div id="search-div"><input id="search" placeholder="Search"/></div>
+    <div id="profile" data-stellar-background-ratio="0.5">
+      <div id="overlay"></div>
+      <div id="user-details">
+        <div id="name">{{ user.username }}</div>
+        <div id="title">{{ title }}</div>
+      </div>
+      <div id="user-profile">
+        
+      </div>
+    </div>
+    <div id="questions-nav">
+      {% for topic in topics %}
+      <div class="question-category clickable" data-topic="{{ topic.tag_name }}" data-id="{{ topic.id }}" onclick="select_topic('{{ topic.name }}')">{{ topic.name }}</div>
+      {% endfor %}
+      <div class="question-category clickable manage-questions">Back</div>
+      <div id="selector">
+        <div id="subtopic-selector">
+          Select Subtopic: &nbsp;&nbsp;
+          <select>
+          </select>
+        </div>
+        <table id="question-list">
+          <tr>
+            <th>ID</th>
+            <th>Question</th>
+            <th>Option 1</th>
+            <th>Option 2</th>
+            <th>Option 3</th>
+            <th>Option 4</th>
+            <th>Answer</th>
+            <th>✔</th>
+            <th>✘</th>
+          </tr>
+          <tr>
+            <td colspan='9'><i>No Questions Found.</i>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

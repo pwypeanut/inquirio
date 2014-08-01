@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+	<head>
+    <title>Inquirio</title>
+    <link href='/resources/css/login.css' rel='stylesheet'>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+    <script src="/resources/js/jquery.min.js"></script>
+    <script src="/resources/js/jquery.cookie.js"></script>
+    <script>
+      var submitPassword = function () {
+        $.post("/forms/login/", {
+          'username': $("#username").val(),
+          'password': $("#password").val(),
+          'csrfmiddlewaretoken': $.cookie("csrftoken"),
+        }, function(data) {
+          var JSON_data = JSON.parse(data);
+          if ( JSON_data[0] == 0 ) {
+            alert(JSON_data[1]);
+          }
+          else {
+            window.location = "/home/"
+          }
+        });
+      };
+      
+      var registerUser = function() {
+        $.post("/forms/register/", {
+          'username': $("#username").val(),
+          'email': $("#email").val(),
+          'password': $("#password").val(),
+          'repeat_password': $("#repeat-password").val(),
+          'csrfmiddlewaretoken': $.cookie('csrftoken'),
+        }, function(data) {
+          var JSON_data = JSON.parse(data);
+          if ( JSON_data[0] == 0 ) {
+            alert(JSON_data[1]);
+          }
+          else {
+            location.reload(false);
+          }
+        });
+      }
+      
+      var clickedSubmit = function() {
+        if ( $("#header").html() == "LOGIN" ) submitPassword();
+        else registerUser();
+      }
+      
+      //float label from http://codepen.io/aaronbarker/pen/tIprm (modified)
+      $(function(){
+        var onClass = "on";
+        var showClass = "show";
+
+        $("input").bind("checkval",function(){
+          var label = $(this).prev("label");
+          if(this.value !== ""){
+            label.addClass(showClass);
+          } else {
+            label.removeClass(showClass);
+          }
+        }).on("keyup",function(){
+          $(this).trigger("checkval");
+        }).on("focus",function(){
+          $(this).prev("label").addClass(onClass);
+        }).on("blur",function(){
+            $(this).prev("label").removeClass(onClass);
+        }).trigger("checkval");
+      });
+
+      $(document).ready(function () {
+        $("#sign-up-tooltip").click(function () {
+          $(".register").slideToggle();
+          $("#password").css("border-right", "1px solid rgba(0,0,0,0.5)");
+          $("#header").text("SIGN UP");
+          $(this).slideUp();
+          $("#submit").animate({"top": 44});
+          setTimeout(function () {
+            $("#submit").appendTo($("#repeat-password").parent());
+            $("#submit").css("top", 1);
+          }, 1000);
+        });
+        
+        $("#submit").click(clickedSubmit);
+        $("input").keypress(function (e) {
+          if (e.which == 13 && $("#header").html() == "LOGIN") {
+            submitPassword();
+          }
+          if (e.which == 13 && $("#header").html() == "SIGN UP") {
+            registerUser();
+          }
+        });
+      });
+        
+    </script>
+	</head>
+	<body>
+    <div id="overlay"></div>
+    <div id="login-box">
+      <h1>INQUIRIO</h1>
+      <div id="header">LOGIN</div>
+      <div class="field-wrapper">
+        <label for="username">username</label>
+        <input id="username" name="username" placeholder="username"/>
+        <div id="notif"></div>
+      </div>
+      <div class="field-wrapper register">
+        <label for="email">email</label>
+        <input id="email" name="email" placeholder="email" type="email"/>
+      </div>
+      <div class="field-wrapper">
+        <label for="password">password</label>
+        <input id="password" name="password" placeholder="password" type="password"/>
+        {% csrf_token %}
+        <div id="submit" class="glyphicon glyphicon-chevron-right"></div>
+      </div>
+      <div class="field-wrapper register">
+        <label for="repeat-password">repeat password</label>
+        <input id="repeat-password" name="repeat-password" placeholder="repeat password" type="password"/>
+      </div>
+      <div id="sign-up-tooltip">
+        Don't have an account?
+      </div>
+    </div>
+	</body>
+</html>

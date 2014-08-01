@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+    <link href='/resources/css/normalize.css' rel='stylesheet'>
+    <link href='/resources/css/home.css' rel='stylesheet'>
+    <script src="/resources/js/jquery.min.js"></script>
+    <script src="/resources/js/stellar.min.js"></script>
+    <script src="/resources/js/masonry.min.js"></script>
+    <script>
+      var selected = [];
+      function render_selected() {
+        $("#topic-info").html("");
+        if ( selected.length == 0 ) {
+          $("#topic-info").append("<h3>Please select subtopics for the quiz.</h3>");
+          return;
+        }
+        else {
+          for ( var i = 0; i < Math.min(selected.length, 5); i++ ) {
+            $("#topic-info").append("<h2>" + selected[i] + "</h2>");
+          }
+          if ( selected.length > 5 ) {
+            $("#topic-info").append("<h2>... and " + (selected.length - 5).toString() + " others");
+          }
+        }
+        $("#topic-info").append("<div id='quiz-buttons' class='clickable'><div id='practice'>PRACTICE</div><div id='random-quiz' class='clickable'>RANDOM QUIZ</div></div>");
+        $("#practice").click(function(){
+          var destStr = "/practice/";
+          var topic_ids = [];
+          for ( var i = 0; i < selected.length; i++ ) {
+            var sid = $("*[data-subtopic-name='" + selected[i] + "']").data(
+"subtopic-id");
+            topic_ids.push(sid);
+          }
+          topic_ids.sort(function(a,b) {return a-b;});
+          for ( var i = 0; i < topic_ids.length; i++ ) destStr += topic_ids[i] + "-";
+          destStr = destStr.slice(0, -1) + "/"
+          window.location = destStr;
+        });
+        $("#random-quiz").click(function(){
+          var destStr = "/quiz/";
+          var topic_ids = [];
+          for ( var i = 0; i < selected.length; i++ ) {
+            var sid = $("*[data-subtopic-name='" + selected[i] + "']").data(
+"subtopic-id");
+            topic_ids.push(sid);
+          }
+          topic_ids.sort(function(a,b) {return a-b;});
+          for ( var i = 0; i < topic_ids.length; i++ ) destStr += topic_ids[i] + "-";
+          destStr = destStr.slice(0, -1) + "/10/"
+          window.location = destStr;
+        });
+      }
+      function tag_name(s) {
+        return s.toLowerCase().replace(" ", "-");
+      }
+      function select_topic(s) {
+        $(".subtopic").hide();
+        $(".subtopic").children("span").css("background-color", "#e74c3c");
+        selected = []
+        render_selected();
+        $(".question-category").css("font-weight", "normal");
+        $("*[data-topic='" + tag_name(s) + "']").css("font-weight", "bold");
+        $("*[data-subtopic='" + tag_name(s) + "']").show();
+      }
+      function toggle_subtopic(s) {
+        if ( selected.indexOf(s) == -1 ) {
+          selected.push(s)
+          $("*[data-subtopic-name='" + s + "']").children("span").css("background-color", "#27ae60");
+        }
+        else {
+          selected.splice(selected.indexOf(s), 1);
+          $("*[data-subtopic-name='" + s + "']").children("span").css("background-color", "#e74c3c");
+        }
+        render_selected();
+      }
+      $(document).ready(function () {
+        $(".subtopic").toggle();
+        select_topic($("#questions-nav").children(":first-child").html());
+        $("#search-logo").click(function () {
+          $("#search-div").slideToggle(200);
+        });
+        $("#questions").on("click", ".card", function () {
+          $(this).remove();
+          $("#questions").masonry();
+          
+        })
+        $.stellar({
+          horizontalScrolling: false,
+          verticalOffset: 50
+        });
+        $(window).scroll(function(e){ 
+          $el = $('#questions-nav'); 
+          if ($(this).scrollTop() > 350 && $el.css('position') != 'fixed'){ 
+            $el.css({'position': 'fixed', 'top': '0px', 'margin-bottom': '0px'}); 
+            $('#questions').css({'margin-top': 87});
+          }
+          if ($(this).scrollTop() < 350 && $el.css('position') == 'fixed')
+          {
+            $el.css({'position': 'relative', 'top': '0px', 'margin-bottom': '42px'});
+            $('#questions').css({'margin-top': 20});
+          }
+        });
+        $(".manage-questions").click(function() {
+          window.location = "/manage/";
+        });
+      });
+      
+    </script>
+  </head>
+  <body>
+    <div id="nav">
+      <a href="#"><img src="/resources/img/inquirio.png" id="logo"/></a>
+      <a id="logout" href="/logout/">LOGOUT</a>
+      <div id="search-logo"><span class="glyphicon glyphicon-search"></span></div>
+    </div>
+    <div id="search-div"><input id="search" placeholder="Search"/></div>
+    <div id="profile" data-stellar-background-ratio="0.5">
+      <div id="overlay"></div>
+      <div id="user-details">
+        <div id="name">{{ user.username }}</div>
+        <div id="title">{{ title }}</div>
+      </div>
+      <div id="user-profile">
+        
+      </div>
+    </div>
+    <div id="questions-nav">
+      {% for topic in topics %}
+      <div class="question-category clickable" data-topic="{{ topic.tag_name }}" onclick="select_topic('{{ topic.name }}')">{{ topic.name }}</div>
+      {% endfor %}
+      <div class="question-category clickable manage-questions">Manage Questions</div>
+    </div>
+    <div id="topic-box">
+      <div id="subtopics">
+        {% for subtopic in subtopics %}
+        <div class="subtopic hidden clickable" data-subtopic="{{ subtopic.tag_name }}" data-subtopic-name="{{ subtopic.name }}" data-subtopic-id="{{ subtopic.id }}" onclick="toggle_subtopic('{{ subtopic.name }}')">{{ subtopic.name }}<span>{{ subtopic.unanswered }}</span></div>
+        {% endfor %}
+      </div>
+      <div id="topic-info">
+        <h2>Circulatory System</h2>
+        <div id="quiz-buttons">
+          <div id="practice" class="clickable">PRACTICE</div>
+          <div id="random-quiz" class="clickable">RANDOM QUIZ</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
