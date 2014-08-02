@@ -24,7 +24,7 @@
             $("#topic-info").append("<h2>... and " + (selected.length - 5).toString() + " others");
           }
         }
-        $("#topic-info").append("<div id='quiz-buttons' class='clickable'><div id='practice'>PRACTICE</div><div id='random-quiz' class='clickable'>RANDOM QUIZ</div></div>");
+        $("#topic-info").append("<div id='quiz-buttons' class='clickable'><div id='practice'>PRACTICE</div></div>");
         $("#practice").click(function(){
           var destStr = "/practice/";
           var topic_ids = [];
@@ -142,7 +142,6 @@
         <h2>Circulatory System</h2>
         <div id="quiz-buttons">
           <div id="practice" class="clickable">PRACTICE</div>
-          <div id="random-quiz" class="clickable">RANDOM QUIZ</div>
         </div>
       </div>
     </div>
