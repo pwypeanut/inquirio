@@ -58,7 +58,6 @@
         $(".question-category").css("font-weight", "normal");
         $("*[data-topic='" + tag_name(s) + "']").css("font-weight", "bold");
         var topicid = $("*[data-topic='" + tag_name(s) + "']").data("id");
-        current_subtopic = topicid;
         $("#question-list").html("<tr><th>ID</th><th id='question_header'>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr><tr><td colspan='9'><i>No Questions Found.</i></tr>");
         $("#subtopic-selector select").html("<option>Please Wait...</option>");
         $.get("/query/subtopic/" + topicid.toString() + "/", function(data) {
@@ -314,6 +313,7 @@
           var waiting = header + "<tr><td colspan='9'><i>Please wait...</i></tr>";
           
           var new_id = topic_to_id[new_topic];
+          current_subtopic = new_id;
           $("#question-list").html(waiting);
           $.get("/query/auth_questions/" + new_id.toString() + "/", function(data) {
             var JSON_data = JSON.parse(data);
@@ -374,7 +374,7 @@
               var html_output = "<select>";
               html_output += "<option value='none'>-</option>";
               for ( var i = 0; i < option_count; i++ ) {
-                html_output += "<option value='" + options[i] + "'>" + options[i] + "</option>";
+                html_output += "<option value='" + htmlentities(options[i]) + "'>" + htmlentities(options[i]) + "</option>";
               }
               html_output += "</select>";
               
@@ -385,7 +385,7 @@
                   'csrfmiddlewaretoken': $.cookie("csrftoken"),
                 });
                 $(this).parent().parent().children(".glyphicon-edit").show();
-                $(this).parent().html($(this).val());
+                $(this).parent().html(htmlentities($(this).val()));
               });
             });
             
