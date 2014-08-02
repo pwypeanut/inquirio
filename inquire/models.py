@@ -13,7 +13,7 @@ class Question(models.Model):
   text = models.CharField(max_length = 512)
   subtopic = models.ForeignKey("Subtopic")
   author = models.ForeignKey(User)
-  date_created = models.DateField()
+  date_created = models.DateField(auto_now = True)
   correct_tries = models.IntegerField()
   wrong_tries = models.IntegerField()
   @property

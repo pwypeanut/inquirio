@@ -50,6 +50,10 @@ def get_question(request, subtopic):
     random.shuffle(questions1)
     for qn in questions1:
       try:
+        QuestionOption.objects.get(question = qn, correct_answer = True)
+      except QuestionOption.DoesNotExist:
+        continue
+      try:
         Answered.objects.get(user = request.user, question = qn)
       except Answered.DoesNotExist:
         return HttpResponse(question_to_array(qn))

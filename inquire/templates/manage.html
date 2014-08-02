@@ -52,11 +52,14 @@
         return current_row;
       }
       
+      var current_subtopic = 0;
+      
       function select_topic(s) {       
         $(".question-category").css("font-weight", "normal");
         $("*[data-topic='" + tag_name(s) + "']").css("font-weight", "bold");
         var topicid = $("*[data-topic='" + tag_name(s) + "']").data("id");
-        $("#question-list").html("<tr><th>ID</th><th>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr><tr><td colspan='9'><i>No Questions Found.</i></tr>");
+        current_subtopic = topicid;
+        $("#question-list").html("<tr><th>ID</th><th id='question_header'>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr><tr><td colspan='9'><i>No Questions Found.</i></tr>");
         $("#subtopic-selector select").html("<option>Please Wait...</option>");
         $.get("/query/subtopic/" + topicid.toString() + "/", function(data) {
           var subtopics = JSON.parse(data);
@@ -306,7 +309,7 @@
         
         var load_questions = function() {
           var new_topic = $("#subtopic-selector select").val();
-          var header = "<tr><th>ID</th><th>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr>";
+          var header = "<tr><th>ID</th><th id='question_header'>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr>";
           var no_question_found = header + "<tr><td colspan='9'><i>No Questions Found.</i></tr>";
           var waiting = header + "<tr><td colspan='9'><i>Please wait...</i></tr>";
           
@@ -389,12 +392,23 @@
             if ( JSON_data.length == 0 ) {
               $("#question-list").html(no_question_found);
             }
+            
+            $("#question_header").append(add_button);
+            
+            $("#question_header .glyphicon-plus").click(function() {
+              $.post("/edit/add/", {
+                'subtopic': current_subtopic,
+                'csrfmiddlewaretoken': $.cookie("csrftoken"),
+              }).done(function(data) {
+                load_questions();
+              });
+            });
           });
         }
         
         $("#subtopic-selector select").change(function() {
           var new_topic = $("#subtopic-selector select").val();
-          var header = "<tr><th>ID</th><th>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr>";
+          var header = "<tr><th>ID</th><th id='question_header'>Question</th><th>Option 1</th><th>Option 2</th><th>Option 3</th><th>Option 4</th><th>Answer</th><th>✔</th><th>✘</th></tr>";
           var no_question_found = header + "<tr><td colspan='9'><i>No Questions Found.</i></tr>";
           var waiting = header + "<tr><td colspan='9'><i>Please wait...</i></tr>";
           
@@ -442,7 +456,7 @@
         <table id="question-list">
           <tr>
             <th>ID</th>
-            <th>Question</th>
+            <th id='question_header'>Question</th>
             <th>Option 1</th>
             <th>Option 2</th>
             <th>Option 3</th>

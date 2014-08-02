@@ -2,7 +2,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidde
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from models import Question, QuestionOption
+from models import Question, QuestionOption, Subtopic
 from django.conf.urls import url
 import json
 
@@ -12,6 +12,7 @@ urlpatterns = [
   url(r'^answer/(?P<question_id>[0-9]+)/$', 'inquire.edit.answer'),
   url(r'^delete/(?P<question_id>[0-9]+)/$', 'inquire.edit.delete'),
   url(r'^verify/$', 'inquire.edit.verify'),
+  url(r'^add/$', 'inquire.edit.add'),
 ]
 
 @login_required
@@ -101,3 +102,14 @@ def verify(request):
       return HttpResponse("error")
   except Question.DoesNotExist:
     return HttpResponse("error")
+  
+@login_required
+def add(request):
+  subtopic_id = request.POST.get("subtopic")
+  try:
+    subtopic = Subtopic.objects.get(id = subtopic_id)
+  except Subtopic.DoesNotExist:
+    return HttpResponseNotFound()
+  new_question = Question(text = "-", author = request.user, subtopic = subtopic, correct_tries = 0, wrong_tries = 0)
+  new_question.save()
+  return HttpResponse()
