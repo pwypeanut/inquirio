@@ -10,6 +10,8 @@ urlpatterns = [
   url(r'^question/(?P<question_id>[0-9]+)/$', 'inquire.edit.question'),
   url(r'^options/(?P<question_id>[0-9]+)/$', 'inquire.edit.options'),
   url(r'^answer/(?P<question_id>[0-9]+)/$', 'inquire.edit.answer'),
+  url(r'^delete/(?P<question_id>[0-9]+)/$', 'inquire.edit.delete'),
+  url(r'^verify/$', 'inquire.edit.verify'),
 ]
 
 @login_required
@@ -74,3 +76,28 @@ def answer(request, question_id):
   correct_option.correct_answer = True
   correct_option.save()
   return HttpResponse()
+
+@login_required
+def delete(request, question_id):
+  try:
+    question = Question.objects.get(id = question_id)
+  except Question.DoesNotExist:
+    return HttpResponseNotFound()
+  if request.user != question.author:
+    return HttpResponseForbidden()
+  QuestionOption.objects.filter(question = question).delete()
+  question.delete()
+  return HttpResponse()
+
+@login_required
+def verify(request):
+  current_id = request.POST.get("current_id")
+  current_qn = request.POST.get("current_qn")
+  try:
+    question = Question.objects.get(id = current_id)
+    if question.text == current_qn:
+      return HttpResponse()
+    else:
+      return HttpResponse("error")
+  except Question.DoesNotExist:
+    return HttpResponse("error")
