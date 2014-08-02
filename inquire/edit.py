@@ -9,6 +9,7 @@ import json
 urlpatterns = [
   url(r'^question/(?P<question_id>[0-9]+)/$', 'inquire.edit.question'),
   url(r'^options/(?P<question_id>[0-9]+)/$', 'inquire.edit.options'),
+  url(r'^answer/(?P<question_id>[0-9]+)/$', 'inquire.edit.answer'),
 ]
 
 @login_required
@@ -33,6 +34,7 @@ def options(request, question_id):
     return HttpResponseNotFound()
   if request.user != question.author:
     return HttpResponseForbidden()
+  correct_answer = None
   try:
     correct_answer = QuestionOption.objects.get(question = question, correct_answer = True)
   except QuestionOption.DoesNotExist:
@@ -41,10 +43,34 @@ def options(request, question_id):
     correct_answer = QuestionOption.objects.filter(question = question, correct_answer = True)[0]
   QuestionOption.objects.filter(question = question).delete()
   for new_option in new_options:
-    if new_option == correct_answer.text:
-      option = QuestionOption.create(question = question, text = new_option, correct_answer = True)
+    if correct_answer == None:
+      option = QuestionOption(question = question, text = new_option, correct_answer = False)
+      option.save()
+    elif new_option == correct_answer.text:
+      option = QuestionOption(question = question, text = new_option, correct_answer = True)
       option.save()
     else:
-      option = QuestionOption.create(question = question, text = new_option, correct_answer = False)
+      option = QuestionOption(question = question, text = new_option, correct_answer = False)
       option.save()
+  return HttpResponse()
+
+@login_required
+def answer(request, question_id):
+  new_answer = request.POST.get("new_answer")
+  try:
+    question = Question.objects.get(id = question_id)
+  except Question.DoesNotExist:
+    return HttpResponseNotFound()
+  if request.user != question.author:
+    return HttpResponseForbidden()
+  try:
+    correct_option = QuestionOption.objects.get(question = question, text = new_answer)
+  except QuestionOption.DoesNotExist:
+    return HttpResponse()
+  old_answers = QuestionOption.objects.filter(question = question, correct_answer = True)
+  for old_answer in old_answers:
+    old_answer.correct_answer = False
+    old_answer.save()
+  correct_option.correct_answer = True
+  correct_option.save()
   return HttpResponse()

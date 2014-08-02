@@ -82,6 +82,7 @@
         $(".option_exist .glyphicon-edit").click(function(event) {
           event.stopImmediatePropagation();
           if (edit_mode) return;
+          var edited_option = $(this).parent().children(".maintext").html();
           $(this).parent().children(".maintext").attr("contentEditable", "true");
           $(this).parent().children(".maintext").focus();
           edit_mode = 1;
@@ -90,6 +91,9 @@
           $(this).parent().children(".maintext").focusout(function(event) {
             event.stopImmediatePropagation();
             edit_mode = 0;
+            if ( $(this).parent().parent().children(".answer").children(".maintext").html() == edited_option ) {
+              $(this).parent().parent().children(".answer").children(".maintext").html("-");
+            }
             var id = $(this).parent().parent().data("id");
             var new_option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
             var new_option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
@@ -110,6 +114,7 @@
         $(".option_last .glyphicon-edit").click(function(event) {
           event.stopImmediatePropagation();
           if (edit_mode) return;
+          var edited_option = $(this).parent().children(".maintext").html();
           $(this).parent().children(".maintext").attr("contentEditable", "true");
           $(this).parent().children(".maintext").focus();
           $(this).hide();
@@ -119,6 +124,9 @@
           $(this).parent().children(".maintext").focusout(function(event) {
             event.stopImmediatePropagation();
             edit_mode = 0;
+            if ( $(this).parent().parent().children(".answer").children(".maintext").html() == edited_option ) {
+              $(this).parent().parent().children(".answer").children(".maintext").html("-");
+            }
             var id = $(this).parent().parent().data("id");
             var new_option1 = $(this).parent().parent().children(".option1").children(".maintext").html();
             var new_option2 = $(this).parent().parent().children(".option2").children(".maintext").html();
@@ -139,6 +147,10 @@
         $(".option_last .glyphicon-remove").click(function(event) {
           event.stopImmediatePropagation();
           if (edit_mode) return;
+          var deleted_option = $(this).parent().children(".maintext").html();
+          if ( $(this).parent().parent().children(".answer").children(".maintext").html() == deleted_option ) {
+            $(this).parent().parent().children(".answer").children(".maintext").html("-");
+          }
           $(this).parent().children(".maintext").html("-");
           $(this).parent().children(".glyphicon-edit").hide();
           $(this).parent().children(".glyphicon-remove").hide();
@@ -180,7 +192,8 @@
             
           attach_option_handlers(0);
         });
-          
+         
+        if (append_flag) $(".option_add").append(add_button);
         $(".option_add .glyphicon-plus").click(function(event) {
           event.stopImmediatePropagation();
           if (edit_mode) return;
