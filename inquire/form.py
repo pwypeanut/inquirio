@@ -132,7 +132,7 @@ NOTE: This is a computer-generated email. Please do not reply to this address.
   
   emailmsg = emailmsg.replace("%username%", requser)
   emailmsg = emailmsg.replace("%email%", reqemail)
-  emailmsg = emailmsg.replace("%domain%", "http://inquirio-128091.apse1.nitrousbox.com")
+  emailmsg = emailmsg.replace("%domain%", "http://inquirio.sg")
   emailmsg = emailmsg.replace("%hashkey%", generate_verification_key(newuser.id, requser, reqemail))
 
   # Send verification email.

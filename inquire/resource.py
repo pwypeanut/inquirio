@@ -7,7 +7,7 @@ from django.template.response import TemplateResponse
 
 import os
 
-RESOURCE_PATH = "/home/action/inquirio/inquire/resources/"
+RESOURCE_PATH = "/root/inquirio/inquire/resources/"
 
 ALLOWED_RESOURCES = [
   'js/jquery.min.js',
