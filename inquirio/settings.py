@@ -90,8 +90,8 @@ STATIC_URL = '/static/'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_HOST_USER = 'verify'
-EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = 25
+#EMAIL_HOST_USER = 'verify@inquirio.sg'
+#EMAIL_HOST_PASSWORD = 'p3aNU+un1corn$'
 
 CSRF_COOKIE_NAME = 'csrftoken'
