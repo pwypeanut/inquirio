@@ -138,7 +138,7 @@ NOTE: This is a computer-generated email. Please do not reply to this address.
   # Send verification email.
   send_mail("Inquirio Account Verification",
             emailmsg.encode('utf-8'),
-            "inquirio@gmail.com",
+            "verify@inquirio.sg",
             [reqemail]
   )
   
