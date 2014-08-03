@@ -30,3 +30,17 @@ apt-get install whois
 whois inquirio.sg
 whois inquirio.tk
 screen
+git commit -m "changed resource directory"
+git add .
+git commit -m "changed resource directory"
+git push -u origin master
+sudo apt-get install shellinabox
+shellinabox
+sudo getit /etc/default/shellinabox
+sudo gedit /etc/default/shellinabox
+nano /etc/default/shellinabox
+invoke-rc.d shellinabox restart
+nano /etc/securetty
+nano /var/log/secure
+nano /etc/default/shellinabox
+invoke-rc.d shellinabox restart
