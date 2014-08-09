@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'w2x@jd4p_*ov5z1%)cr3bqk@hu1$(vbxs=i(m+ltyp2ct1&q@4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 
@@ -95,3 +95,8 @@ EMAIL_PORT = 25
 #EMAIL_HOST_PASSWORD = 'p3aNU+un1corn$'
 
 CSRF_COOKIE_NAME = 'csrftoken'
+
+ADMINS = (
+    ('Wen Yuen', 'pwypeanut@gmail.com'),
+    ('Bradley', 'bradleyteowj@gmail.com'),
+)

@@ -93,3 +93,7 @@ cd ..
 cd default
 nano shellinabox
 invoke-rc.d shellinabox restart
+sudo apt-get update
+exit
+sudo apt-get update
+exit
