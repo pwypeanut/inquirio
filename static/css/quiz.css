@@ -1,0 +1,109 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600);
+
+body {
+  background: rgb(240, 242, 243);
+  font-family: 'Source Sans Pro', sans-serif !important;
+}
+
+#nav {
+  width: 100%;
+  height: 50px;
+  border-bottom: rgb(200, 200, 200) 1px solid;
+}
+
+#logo {
+  height: 20px;
+  margin-top: 15px;
+  padding-left: 15px;
+  padding-right: 15px;
+  border-right: rgb(200, 200, 200) 1px solid;
+}
+
+#search-logo {
+  background: #333;
+  height: 50px;
+  width: 50px;
+  float: right;
+}
+
+#search-logo:hover {
+  background: #444;
+}
+
+#search-logo span {
+  color: white;
+  font-size: 15px;
+  width: 100%;
+  text-align: center;
+  line-height: 50px;
+}
+
+#search-div {
+  float: right;
+  display: none;
+}
+
+#search {
+  height: 45px;
+  width: 300px;
+  outline: none;
+  border: rgb(200, 200, 200) 1px solid;
+  border-top: none;
+  padding-left: 15px;
+  position: relative;
+  z-index: 2;
+}
+
+.card {
+  width: 500px;
+  border: 1px solid rgb(200, 200, 200);
+  margin: 0 auto;
+}
+
+.card h3 {
+  margin: 0;
+  padding: 10px;
+  background-color: #e74c3c;
+  color: white;
+  font-weight: 300;
+}
+
+.card p {
+  padding: 10px;
+  margin: 0;
+}
+
+.options {
+  padding: 10px;
+}
+
+.option {
+  margin-bottom: 5px;
+}
+
+.option span {
+  margin-left: 5px;
+}
+
+#credits {
+  padding-left: 5px;
+  padding-bottom: 5px;
+}
+
+#questions {
+  position: relative;
+  top: 50%;
+  margin-top: -150px;
+}
+
+#submit {
+  float: right;
+  margin-top: -25px;
+}
+
+#logout {
+  position: relative;
+  top: 7px;
+  padding-left: 15px;
+  padding-right: 15px;
+}

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-import utils, math
+import utils, math, random, string
 
 class QuestionOption(models.Model):
   text = models.CharField(max_length = 128)
@@ -9,13 +9,18 @@ class QuestionOption(models.Model):
   def __unicode__(self):
     return self.question.subtopic.topic.name + " / " + self.question.subtopic.name + ": " + self.question.text + " (" + self.text + ")"
 
+def random_identifier():
+  return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
+  
 class Question(models.Model):
   text = models.CharField(max_length = 512)
   subtopic = models.ForeignKey("Subtopic")
   author = models.ForeignKey(User)
   date_created = models.DateField(auto_now = True)
+  unique_identifier = models.CharField(max_length = 32, unique = True, default = random_identifier)
   correct_tries = models.IntegerField()
   wrong_tries = models.IntegerField()
+  visible = models.BooleanField()
   @property
   def difficulty(self): # Out of 1
     if correct_tries + wrong_tries == 0:
@@ -45,7 +50,7 @@ class Subtopic(models.Model):
   def question_count(self):
     return Question.objects.filter(subtopic = self).count()
   def unanswered_count(self, user):
-    return Question.objects.filter(subtopic = self).count() - Answered.objects.filter(question__subtopic = self, user = user).count()
+    return Question.objects.filter(subtopic = self, visible = True).count() - Answered.objects.filter(question__subtopic = self, question__visible = True, user = user).count()
   
 class Answered(models.Model):
   user = models.ForeignKey(User)

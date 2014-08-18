@@ -7,7 +7,7 @@ from models import Subtopic, Topic, Question, QuestionOption
 
 urlpatterns = [
   url(r'^subtopic/(?P<topic_id>[0-9]+)', 'inquire.query.subtopic'),
-  url(r'^auth_questions/(?P<subtopic_id>[0-9]+)', 'inquire.query.auth_questions'),
+  url(r'^auth_questions/(?P<topic_id>[0-9]+)', 'inquire.query.auth_questions'),
 ]
 
 def subtopic(request, topic_id):
@@ -28,7 +28,7 @@ def subtopic(request, topic_id):
 def question_to_array(qn):
   qn_info = []
   qn_info.append(qn.id)
-  qn_info.append(qn.text)
+  qn_info.append(qn.subtopic.name + ": " + qn.text)
   qn_options = QuestionOption.objects.filter(question = qn)
   qn_optiontext = []
   qn_correctans = "undefined"
@@ -43,14 +43,17 @@ def question_to_array(qn):
     qn_info.append("-")
   qn_info.append(qn.correct_tries)
   qn_info.append(qn.wrong_tries)
+  qn_info.append(qn.unique_identifier)
+  qn_info.append(qn.visible)
   return qn_info
 
-def auth_questions(request, subtopic_id):
+def auth_questions(request, topic_id):
   try:
-    subtopic = Subtopic.objects.get(id = subtopic_id)
-  except Subtopic.DoesNotExist:
+    topic = Topic.objects.get(id = topic_id)
+  except Topic.DoesNotExist:
     return HttpResponseNotFound()
-  questions = Question.objects.filter(subtopic = subtopic, author = request.user)
+  
+  questions = Question.objects.filter(subtopic__topic = topic, author = request.user)
   question_array = []
   for qn in questions:
     question_array.append(question_to_array(qn))

@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'w2x@jd4p_*ov5z1%)cr3bqk@hu1$(vbxs=i(m+ltyp2ct1&q@4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 TEMPLATE_DEBUG = True
 
@@ -86,7 +86,11 @@ LOGIN_URL = '/login/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/resources/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATICFILES_DIRS = (
+  os.path.join(BASE_DIR, 'inquire/resources/'),
+)
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'localhost'
@@ -100,3 +104,8 @@ ADMINS = (
     ('Wen Yuen', 'pwypeanut@gmail.com'),
     ('Bradley', 'bradleyteowj@gmail.com'),
 )
+
+ALLOWED_HOSTS = [
+  'inquirio.sg',
+  'inquirio-128091.apse1.nitrousbox.com',
+]

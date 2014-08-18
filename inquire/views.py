@@ -10,6 +10,7 @@ from django.contrib.auth.views import logout_then_login
 from django.contrib.auth.decorators import login_required
 from models import Subtopic, Topic
 from json import JSONEncoder
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 urlpatterns = [
@@ -54,6 +55,7 @@ def home(request):
   })
 
 @login_required
+@ensure_csrf_cookie
 def manage(request):
   if request.user.is_superuser:
     title = "Administrator"
