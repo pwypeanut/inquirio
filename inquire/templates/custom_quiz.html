@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+    <head>
+      <title>Inquirio</title>
+      <meta charset="UTF-8">
+      <link href='/resources/css/normalize.css' rel='stylesheet'>
+      <link href='/resources/css/quiz.css' rel='stylesheet'>
+      <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
+      <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+      <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+      <script src="/resources/js/jquery.min.js"></script>
+      <script src="/resources/js/jquery.cookie.js"></script>
+      <script src="/resources/js/jquery.qtip.min.js"></script>
+      <script type="text/javascript">
+        var quiz = '{{ quiz_id }}';
+        var quiz_length = {{ quiz_length }};
+        var cur = 1;
+        var submitted = 0;
+        var qn;
+        function load_question(x) {
+          var url =  "/quiz/get/" + quiz + "/" + x + "/";
+          $("#submit").attr("Value", "Submit");
+          $.get(url, function(data) {
+            qn = JSON.parse(data);
+            if ( data != "[]" ) {
+              $(".card h3").html("Q" + cur + ". " + qn[1]);
+              $(".des").html(qn[2]);
+              $(".options").html("");
+              for ( var i = 0; i < qn[3].length; i++ ) {
+                $(".options").append("<div id=\"option" + i.toString() + "\" class=\"option\"><input type=\"radio\" name=\"q1\"><span>" + qn[3][i] + "</span></div>");
+              }
+              $("#credits").html("written by " + qn[4] + " • " + qn[5]);
+              submitted = 0;
+            }
+            else {
+              try_count++;
+              if ( try_count < 20 ) {
+                load_question();
+              }
+              else {
+                $(".card h3").html("Sorry, we are out of questions at the moment.");
+                $(".option").html("...");
+                $(".des").html("...")
+                $("#credits").html("...");
+              }
+            }
+          });
+        }
+        $(document).ready(function() {
+          $("#search-logo").click(function () {
+            $("#search-div").slideToggle(200);
+          });
+          load_question(1);
+          
+          $("#submit").click(function() {
+            if (submitted) return;
+            submitted = 1;
+            for ( var i = 0; i < qn[3].length; i++ ) {
+              if ( $("#option" + i.toString() + " input").is(":checked") ) {
+                $.post("/quiz/try/" + quiz + "/" + cur + "/", {
+                  option: qn[3][i],
+                  csrfmiddlewaretoken: $.cookie("csrftoken"),
+                }).done(function(data) {
+                  cur++;
+                  if ( cur == quiz_length + 1 ) {
+                      window.location = '/home/';
+                      return;
+                  }
+                  load_question(cur);
+                });
+              }
+            }
+          });
+        });
+      </script>
+  </head>
+  <body>
+    <div id="nav">
+      <a href="/home/"><img src="/resources/img/inquirio.png" id="logo"/></a>
+      <a id="logout" href="/logout/">LOGOUT</a>
+      <div id="search-logo"><span class="glyphicon glyphicon-search"></span></div>
+    </div>
+    <div id="search-div"><input id="search" placeholder="Search"/></div>
+    <div id="questions">
+      <div class="card science">
+        <h3>Loading question...</h3>
+        <p class="des">
+          ....</p>
+        <div class="options">
+          <div class="option">
+            <input type="radio" name="q1">
+            <span>...</span>
+          </div>
+          <div class="option">
+            <input type="radio" name="q1">
+            <span>...</span>
+          </div>
+          <div class="option">
+            <input type="radio" name="q1">
+            <span>...</span>
+          </div>
+          <div class="option">
+            <input type="radio" name="q1">
+            <span>...</span>
+          </div>
+        </div>
+        <div id="credits">
+          ...
+        </div>
+        <input id="submit" type="submit" value="Submit">
+        {% csrf_token %}
+      </div>
+    </div>
+  </body>
+</html>

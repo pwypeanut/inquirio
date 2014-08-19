@@ -18,7 +18,53 @@ urlpatterns = [
   url(r'^create/$', 'inquire.quiz.create'),
   url(r'^summary/(?P<quiz_id>\w+)/$', 'inquire.quiz.summary'),
   url(r'^close/(?P<quiz_id>\w+)/$', 'inquire.quiz.close'),
+  url(r'^attempt/(?P<quiz_id>\w+)/$', 'inquire.quiz.attempt'),
+  url(r'^get/(?P<quiz_id>\w+)/(?P<qn_number>[0-9]+)/$', 'inquire.quiz.get'),
+  url(r'^try/(?P<quiz_id>\w+)/(?P<qn_number>[0-9]+)/$', 'inquire.quiz.try_question'),
 ]
+
+from inquire.get import question_to_array
+
+@login_required
+def get(request, quiz_id, qn_number):
+   try:
+       quiz = Quiz.objects.get(url = quiz_id)
+   except:
+       return HttpResponseNotFound()
+   questions = quiz.questions.all()
+   return HttpResponse(question_to_array(questions[int(qn_number) - 1]))
+
+@login_required
+def try_question(request, quiz_id, qn_number):
+   answer_text = request.POST.get("option")
+   try:
+       quiz = Quiz.objects.get(url = quiz_id)
+   except:
+       return HttpResponseNotFound()
+   questions = quiz.questions.all()
+   try:
+       answer = QuestionOption.objects.get(question = questions[int(qn_number) - 1], text = answer_text)
+   except QuestionOption.DoesNotExist:
+       return HttpResponseNotFound()
+   response = QuizResponse(quiz = quiz, question = questions[int(qn_number) - 1], chosen_answer = answer, user = request.user)
+   try:
+       QuizResponse.objects.get(quiz = quiz, question = questions[int(qn_number) - 1], user = request.user)
+   except:
+       response.save()
+       return HttpResponse()
+   else:
+       return HttpResponseNotFound()
+
+@login_required
+def attempt(request, quiz_id):
+   try:
+       quiz = Quiz.objects.get(url = quiz_id)
+   except:
+       return HttpResponseNotFound()
+   return render_to_response("custom_quiz.html", {
+     'quiz_id': quiz_id,
+     'quiz_length': quiz.questions.all().count(),
+   })
 
 @login_required
 def create(request):
