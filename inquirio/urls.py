@@ -15,5 +15,6 @@ urlpatterns = patterns('',
     url(r'^attempt/', include('inquire.attempt')),
     url(r'^query/', include('inquire.query')),
     url(r'^edit/', include('inquire.edit')),
+    url(r'^quiz/', include('inquire.quiz')),
     url(r'^', include('inquire.views')),
 )

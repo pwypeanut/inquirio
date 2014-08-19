@@ -229,6 +229,10 @@ body {
   float: right;
 }
 
+.add-quiz {
+  float: right;
+}
+
 #question-list, #question-list th, #question-list td {
   border: 1px solid black;
   padding: 4px;

@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Inquirio</title>
+    <meta charset="UTF-8">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
+    <link href='/resources/css/normalize.css' rel='stylesheet'>
+    <link href='/resources/css/manage.css' rel='stylesheet'>
+    <link href="/resources/css/x-editable.css" rel="stylesheet">
+    <script src="/resources/js/jquery.min.js"></script>
+    <script src="/resources/js/stellar.min.js"></script>
+    <script src="/resources/js/jquery-editable.min.js"></script>
+    <script src="/resources/js/jquery.cookie.js"></script>
+    <script>
+      var generate_quiz = function() {
+        var qcnt = 0;
+        var questions = [];
+        $(".question").each(function() {
+          if ( $(this).children("input").is(":checked") ) {
+            qcnt++;
+            questions.push($(this).data("identifier"));
+          }
+        })
+        if ( qcnt == 0 ) {
+          alert("Please tick at least 1 question.");
+          return;
+        }
+        if ( !confirm("Are you sure you want to generate a quiz with these " + qcnt + " question(s)?") ) return;
+        $.post('/quiz/create/', {
+          'csrfmiddlewaretoken': $.cookie("csrftoken"),
+          'questions': JSON.stringify(questions),
+        });
+        alert("An email with the quiz details has been sent to your email.");
+        //window.location = "/home/";
+      }
+      
+      $(document).ready(function () {
+        $.fn.editable.defaults.mode = 'inline';
+          
+        $("#search-logo").click(function () {
+          $("#search-div").slideToggle(200);
+        });
+
+        $.stellar({
+          horizontalScrolling: false,
+          verticalOffset: 50
+        });
+        $(window).scroll(function(e){ 
+          $el = $('#questions-nav'); 
+          if ($(this).scrollTop() > 350 && $el.css('position') != 'fixed'){ 
+            $el.css({'position': 'fixed', 'top': '0px', 'margin-bottom': '0px'}); 
+            $('#questions').css({'margin-top': 87});
+          }
+          if ($(this).scrollTop() < 350 && $el.css('position') == 'fixed')
+          {
+            $el.css({'position': 'relative', 'top': '0px', 'margin-bottom': '42px'});
+            $('#questions').css({'margin-top': 20});
+          } 
+        });
+        
+
+        $("#select-all").click(function () {
+          $("input[type='checkbox']").prop("checked", true);
+        });
+
+        $("#select-none").click(function () {
+          $("input[type='checkbox']").prop("checked", false);
+        })
+
+        $(".question-category").click(function() {
+          load_section($(this).data("topicid"));
+        });
+        
+        $(".question button").click(function() {
+          generate_quiz();
+        })
+      });
+    </script>
+  </head>
+  <body>
+    <div id="nav">
+      <a href="/home/"><img src="/resources/img/inquirio.png" id="logo"/></a>
+      <div id="search-logo"><span class="glyphicon glyphicon-search"></span></div>
+    </div>
+    <div id="search-div"><input id="search" placeholder="Search"/></div>
+    <div id="profile" data-stellar-background-ratio="0.5">
+      <div id="overlay"></div>
+      <div id="user-details">
+        <div id="name">{{ user.username }}</div>
+        <div id="title">{{ title }}</div>
+      </div>
+      <div id="user-profile">
+        
+      </div>
+    </div>
+    
+    <div id="manage-div">
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+      <div class="actions">
+        <div id="select-all"><span class="fa fa-check-square-o"></span></div>
+        <div id="select-none"><span class="fa fa-square-o"></span></div>
+      </div>
+      {% for qn in questions %}
+        <div class='question' data-identifier='{{ qn.unique_identifier }}'>
+          <input type='checkbox'>
+          <h3 class='questiontext'>{{ qn.subtopic_name }}: {{ qn.text }}</h3>
+          <h3 class='answers'>Answer: {{ qn.answer }}</h3>
+        </div>
+      {% endfor %}
+      <div class='question'>
+        <button style='margin: 2px;'>Create Quiz</button>
+      </div>
+    </div>
+  </body>
+</html>

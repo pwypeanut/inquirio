@@ -106,6 +106,9 @@
         $(".manage-questions").click(function() {
           window.location = "/manage/";
         });
+        $(".add-quiz").click(function() {
+          window.location = "/quiz/create/";
+        });
       });
       
     </script>
@@ -131,6 +134,7 @@
       {% for topic in topics %}
       <div class="question-category clickable" data-topic="{{ topic.tag_name }}" onclick="select_topic('{{ topic.name }}')">{{ topic.name }}</div>
       {% endfor %}
+      <div class="question-category clickable add-quiz">Add Quiz</div>
       <div class="question-category clickable manage-questions">Manage Questions</div>
     </div>
     <div id="topic-box">

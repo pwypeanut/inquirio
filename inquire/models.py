@@ -57,3 +57,13 @@ class Answered(models.Model):
   question = models.ForeignKey("Question")
   def __unicode__(self):
     return self.user.username + " answered " + self.question.text
+  
+def random_url():
+  return ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(6))
+
+class Quiz(models.Model):
+  questions = models.ManyToManyField("Question")
+  author = models.ForeignKey(User)
+  url = models.CharField(max_length = 6, default = random_url)
+  def __unicode__(self):
+    return self.author.username + " quiz"

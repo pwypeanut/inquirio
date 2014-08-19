@@ -20,7 +20,6 @@ urlpatterns = [
   url(r'^login/$', 'inquire.views.login'),
   url(r'^logout/$', 'inquire.views.logout_then_login'),
   url(r'^practice/(?P<topics>[0-9-]+)/$', 'inquire.views.practice'),
-  url(r'^quiz/(?P<topics>[0-9-]+)/(?P<question>[0-9]+)/$', 'inquire.views.quiz'),
 ]
 
 # Create your views here.
