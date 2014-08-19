@@ -8,7 +8,7 @@ from django.core.context_processors import csrf
 from django.shortcuts import render_to_response
 from django.contrib.auth.views import logout_then_login
 from django.contrib.auth.decorators import login_required
-from models import Subtopic, Topic, Question, QuestionOption, Quiz
+from models import Subtopic, Topic, Question, QuestionOption, Quiz, QuizResponse
 from json import JSONEncoder
 import json, time
 from django.core.mail import send_mail
@@ -82,9 +82,8 @@ def create(request):
     print emailmsg
     send_mail("New Quiz Created: " + new_quiz.url, emailmsg, "verify@inquirio.sg", [request.user.email], fail_silently = False)
     return HttpResponse()
-  
-@login_required
-def summary(request, quiz_id):
+
+def request_summary(request, quiz_id):
   try:
     quiz = Quiz.objects.get(url = quiz_id)
   except:
@@ -108,24 +107,57 @@ def summary(request, quiz_id):
   
   emailmsg = emailmsg.replace("%username%", request.user.username)
   emailmsg = emailmsg.replace("%identifier%", quiz_id)
-  emailmsg = emailmsg.replace("%timestamp%", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(ts)))
+  emailmsg = emailmsg.replace("%timestamp%", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
   
   answers_str = ""
   
   qn_count = 0
-  for qn in quiz.questions:
+  for qn in quiz.questions.all():
     qn_count += 1
-    answers_str += "\t" + str(qn_count) + ". " + qn.text + "\n"
-    options = QuestionOption.objects.get(question = qn)
+    options = QuestionOption.objects.filter(question = qn)
+    correct_option = QuestionOption.objects.get(question = qn, correct_answer = True)
+    
+    correct_answers = QuizResponse.objects.filter(quiz = quiz, question = qn, chosen_answer = correct_option).count()
+    wrong_answers = QuizResponse.objects.filter(quiz = quiz, question = qn).count() - correct_answers
+    answers_str += "\t" + str(qn_count) + ". " + qn.text + " (" + str(correct_answers) + " correct, " + str(wrong_answers) + " wrong)\n"
     for op in options:
-      responses = QuizResponse.objects.get(quiz = quiz, question = qn, chosen_answer = options)
-      answers_str += "\t" + "Option: " + op.text + " (" + responses.count() + ")" + "\n"
+      responses = QuizResponse.objects.filter(quiz = quiz, question = qn, chosen_answer = op)
+      answers_str += "\t" + "Option: " + op.text + " (" + str(responses.count()) + ") --> "
+      if responses.count() == 0:
+        answers_str += "None"
+      else:
+        for res in responses:
+          answers_str += res.user.username + ". "
+      answers_str += "\n"
     answers_str += "\n"
   
   emailmsg = emailmsg.replace("%answers%", answers_str)
   send_mail("Summary of Responses: " + quiz_id, emailmsg, "verify@inquirio.sg", [request.user.email], fail_silently = False)
-  return HttpResponse()
+
+@login_required
+def summary(request, quiz_id):
+  try:
+    quiz = Quiz.objects.get(url = quiz_id)
+  except:
+    return HttpResponseNotFound()
+  
+  if quiz.author != request.user:
+    return HttpResponseNotFound()
+  request_summary(request, quiz_id)
+  return HttpResponse("An email has been sent.")
 
 @login_required
 def close(request, quiz_id):
-  return HttpResponse()
+  try:
+    quiz = Quiz.objects.get(url = quiz_id)
+  except:
+    return HttpResponseNotFound()
+  
+  if quiz.author != request.user:
+    return HttpResponseNotFound()
+    
+  request_summary(request, quiz_id)
+  
+  quiz.delete()
+  
+  return HttpResponse("The quiz has been closed.")
