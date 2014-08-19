@@ -10,12 +10,14 @@ from django.contrib.auth.views import logout_then_login
 from django.contrib.auth.decorators import login_required
 from models import Subtopic, Topic, Question, QuestionOption, Quiz
 from json import JSONEncoder
-import json
+import json, time
 from django.core.mail import send_mail
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 urlpatterns = [
   url(r'^create/$', 'inquire.quiz.create'),
+  url(r'^summary/(?P<quiz_id>\w+)/$', 'inquire.quiz.summary'),
+  url(r'^close/(?P<quiz_id>\w+)/$', 'inquire.quiz.close'),
 ]
 
 @login_required
@@ -80,3 +82,50 @@ def create(request):
     print emailmsg
     send_mail("New Quiz Created: " + new_quiz.url, emailmsg, "verify@inquirio.sg", [request.user.email], fail_silently = False)
     return HttpResponse()
+  
+@login_required
+def summary(request, quiz_id):
+  try:
+    quiz = Quiz.objects.get(url = quiz_id)
+  except:
+    return HttpResponseNotFound()
+  
+  if quiz.author != request.user:
+    return HttpResponseNotFound()
+  
+  emailmsg = """
+  Dear %username%,
+  
+  Summary of quiz %identifier% as of %timestamp% has been requested.
+
+%answers%
+  
+  Thank you!
+  
+  Regards,
+  The Administrators of Inquirio.
+  """
+  
+  emailmsg = emailmsg.replace("%username%", request.user.username)
+  emailmsg = emailmsg.replace("%identifier%", quiz_id)
+  emailmsg = emailmsg.replace("%timestamp%", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(ts)))
+  
+  answers_str = ""
+  
+  qn_count = 0
+  for qn in quiz.questions:
+    qn_count += 1
+    answers_str += "\t" + str(qn_count) + ". " + qn.text + "\n"
+    options = QuestionOption.objects.get(question = qn)
+    for op in options:
+      responses = QuizResponse.objects.get(quiz = quiz, question = qn, chosen_answer = options)
+      answers_str += "\t" + "Option: " + op.text + " (" + responses.count() + ")" + "\n"
+    answers_str += "\n"
+  
+  emailmsg = emailmsg.replace("%answers%", answers_str)
+  send_mail("Summary of Responses: " + quiz_id, emailmsg, "verify@inquirio.sg", [request.user.email], fail_silently = False)
+  return HttpResponse()
+
+@login_required
+def close(request, quiz_id):
+  return HttpResponse()

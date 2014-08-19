@@ -67,3 +67,11 @@ class Quiz(models.Model):
   url = models.CharField(max_length = 6, default = random_url)
   def __unicode__(self):
     return self.author.username + " quiz"
+  
+class QuizResponse(models.Model):
+  quiz = models.ForeignKey("Quiz")
+  question = models.ForeignKey("Question")
+  user = models.ForeignKey(User)
+  chosen_answer = models.ForeignKey("QuestionOption")
+  def __unicode__(self):
+    return self.user.username + " answered " + self.question.name
