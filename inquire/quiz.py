@@ -57,7 +57,7 @@ def create(request):
     Your new quiz %identifier% has been created!
     
     The questions included in this quiz are:
-    %questions%
+%questions%
     
     Participants of the quiz should visit http://inquirio.sg/quiz/attempt/%identifier%/ .
     
@@ -71,11 +71,12 @@ def create(request):
     The Administrators of Inquirio.
     """
     
-    emailmsg.replace("%username%", request.user.username)
-    emailmsg.replace("%identifier%", new_quiz.url)
+    emailmsg = emailmsg.replace("%username%", request.user.username)
+    emailmsg = emailmsg.replace("%identifier%", new_quiz.url)
     questions_str = ""
     for qn in questions_list:
-      questions_str += qn.__unicode__() + "\n"
-    emailmsg.replace("%questions%", questions_str)
+      questions_str += "\t" + qn.__unicode__() + "\n"
+    emailmsg = emailmsg.replace("%questions%", questions_str)
+    print emailmsg
     send_mail("New Quiz Created: " + new_quiz.url, emailmsg, "verify@inquirio.sg", [request.user.email], fail_silently = False)
     return HttpResponse()
